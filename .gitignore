@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Next.js build outputs
+.next/
+**/.next/
+.next_app/
+**/.next_app/
+out/
+dist/
+**/dist/
+build/
+
+# Environment variables & local secrets
+.env
+**/.env
+!.env.example
+!**/.env.example
+
+# Database runtime data
+backend/data/db.json
+
+# Logs & misc
+*.log
+*.tsbuildinfo
+next-env.d.ts
+test.txt
+.DS_Store
