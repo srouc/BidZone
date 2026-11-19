@@ -21,5 +21,26 @@ export const config = {
     windowSeconds: process.env.ANTI_SNIPING_WINDOW_SECONDS ? parseInt(process.env.ANTI_SNIPING_WINDOW_SECONDS, 10) : 120,
     extensionSeconds: process.env.ANTI_SNIPING_EXTENSION_SECONDS ? parseInt(process.env.ANTI_SNIPING_EXTENSION_SECONDS, 10) : 120,
   },
-  escrowVaultAddress: process.env.ESCROW_VAULT_ADDRESS || "0x91bF24c13634C2867F0022B8E2741fFa56E74519"
+  escrowVaultAddress: process.env.ESCROW_VAULT_ADDRESS || "0x91bF24c13634C2867F0022B8E2741fFa56E74519",
+  email: {
+    host: process.env.SMTP_HOST || "smtp.gmail.com",
+    port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587,
+    user: process.env.SMTP_USER || "",
+    pass: process.env.SMTP_PASS || "",
+    from: process.env.SMTP_FROM || "BidZone Security Desk <security@bidzone.luxury>",
+    secure: process.env.SMTP_SECURE === "true"
+  },
+  aba: {
+    merchantId: process.env.ABA_PAYWAY_MERCHANT_ID || "ec438912",
+    apiKey: process.env.ABA_PAYWAY_API_KEY || "bidzone_aba_demo_api_key_2026",
+    apiEndpoint: process.env.ABA_PAYWAY_API_URL || "https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1/payments/purchase",
+    merchantName: process.env.ABA_MERCHANT_NAME || "BIDZONE ESCROW FIDUCIARY",
+    merchantCity: process.env.ABA_MERCHANT_CITY || "Phnom Penh",
+    currency: "USD"
+  },
+  stripe: {
+    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || "pk_test_51MockBidZonePublishableKey99182371",
+    secretKey: process.env.STRIPE_SECRET_KEY || "sk_test_51MockBidZoneSecretKey99182371",
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || "whsec_mock_bidzone_stripe_secret"
+  }
 };

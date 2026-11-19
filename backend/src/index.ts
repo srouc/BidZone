@@ -7,6 +7,7 @@ import apiRouter from "./routes/index.js";
 import { registerAuctionSocketHandlers } from "./sockets/auction.socket.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 import { testMySQLConnection } from "./db/mysql.js";
+import { initDatabaseTables } from "./db/init.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -50,7 +51,10 @@ app.use(errorHandler);
 
 if (process.env.NODE_ENV !== "test") {
   server.listen(config.port, async () => {
-    await testMySQLConnection();
+    const isDbConnected = await testMySQLConnection();
+    if (isDbConnected) {
+      await initDatabaseTables();
+    }
     console.log(`====================================================`);
     console.log(`⚡ BidZone Auction & Escrow Backend API running`);
     console.log(`🚀 HTTP Server: http://localhost:${config.port}`);

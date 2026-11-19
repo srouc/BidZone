@@ -12,10 +12,17 @@ import {
   FileText, 
   Truck, 
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Clock,
+  Calendar
 } from "lucide-react";
 import { useAuction } from "@/lib/auction-context";
 import { AuctionCategory, ItemCondition } from "@/types/auction";
+
+function toLocalInput(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 
 export default function CreateAuctionPage() {
   const router = useRouter();
@@ -36,6 +43,16 @@ export default function CreateAuctionPage() {
   const [estimatedLow, setEstimatedLow] = useState<string>("70000");
   const [estimatedHigh, setEstimatedHigh] = useState<string>("95000");
 
+  const [startTime, setStartTime] = useState<string>(() => toLocalInput(new Date()));
+  const [endTime, setEndTime] = useState<string>(() => toLocalInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)));
+  const [timeError, setTimeError] = useState<string | null>(null);
+
+  const applyDurationPreset = (hours: number) => {
+    const startMs = startTime ? new Date(startTime).getTime() : Date.now();
+    setEndTime(toLocalInput(new Date(startMs + hours * 60 * 60 * 1000)));
+    setTimeError(null);
+  };
+
   const [featuredImage, setFeaturedImage] = useState(
     "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80"
   );
@@ -45,6 +62,14 @@ export default function CreateAuctionPage() {
 
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
+    const startMs = new Date(startTime).getTime();
+    const endMs = new Date(endTime).getTime();
+    if (isNaN(startMs) || isNaN(endMs) || endMs <= startMs) {
+      setTimeError("End Time must be strictly after Start Time.");
+      setStep(2);
+      return;
+    }
+
     const createdLot = createAuction({
       title: title || "Rare Collector Lot",
       category,
@@ -58,6 +83,8 @@ export default function CreateAuctionPage() {
       minIncrement: Number(minIncrement),
       estimatedLow: Number(estimatedLow),
       estimatedHigh: Number(estimatedHigh),
+      startTime: new Date(startTime).toISOString(),
+      endTime: new Date(endTime).toISOString(),
       featuredImage: featuredImage || "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
       images: [featuredImage || "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80"],
       shippingOrigin,
@@ -282,6 +309,75 @@ export default function CreateAuctionPage() {
                       value={estimatedHigh}
                       onChange={(e) => setEstimatedHigh(e.target.value)}
                       className="w-1/2 px-4 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Auction Schedule: Start Time & End Time */}
+              <div className="pt-4 border-t border-slate-100 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <label className="text-xs font-bold text-slate-700 flex items-center space-x-1.5">
+                    <Clock className="w-4 h-4 text-blue-600" />
+                    <span>Auction Schedule (Start Time & End Time)</span>
+                  </label>
+                  <div className="flex items-center space-x-1.5">
+                    {[
+                      { label: "24h", hours: 24 },
+                      { label: "3 Days", hours: 72 },
+                      { label: "7 Days", hours: 168 },
+                      { label: "14 Days", hours: 336 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => applyDurationPreset(preset.hours)}
+                        className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white text-[11px] font-bold border border-blue-200 transition"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {timeError && (
+                  <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold">
+                    {timeError}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-600 flex items-center space-x-1">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Start Date & Time</span>
+                    </label>
+                    <input
+                      type="datetime-local"
+                      required
+                      value={startTime}
+                      onChange={(e) => {
+                        setStartTime(e.target.value);
+                        setTimeError(null);
+                      }}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-bold outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-600 flex items-center space-x-1">
+                      <Clock className="w-3.5 h-3.5 text-blue-600" />
+                      <span>End Date & Time</span>
+                    </label>
+                    <input
+                      type="datetime-local"
+                      required
+                      value={endTime}
+                      onChange={(e) => {
+                        setEndTime(e.target.value);
+                        setTimeError(null);
+                      }}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-bold outline-none focus:border-blue-500"
                     />
                   </div>
                 </div>

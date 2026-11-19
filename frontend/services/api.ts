@@ -97,6 +97,19 @@ class ApiClient {
     );
   }
 
+  // Admin
+  async updateAuctionSchedule(
+    auctionId: string,
+    schedule: { startTime?: string; endTime?: string; status?: string; isLive?: boolean },
+    demoUserId?: string
+  ) {
+    return this.request<{ success: boolean; auction: any }>(
+      `/admin/auctions/${auctionId}/schedule`,
+      { method: "PATCH", body: JSON.stringify(schedule) },
+      demoUserId
+    );
+  }
+
   // Auth Fast Pass
   async fastPassLogin(role: string) {
     return this.request<{ success: boolean; token: string; user: any }>(`/auth/fast-pass/${role}`);

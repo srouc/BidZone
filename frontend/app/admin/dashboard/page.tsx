@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { 
   ShieldCheck, 
@@ -12,12 +12,16 @@ import {
   Eye, 
   Settings, 
   Lock,
-  Layers
+  Layers,
+  Clock
 } from "lucide-react";
 import { useAuction } from "@/lib/auction-context";
+import { AuctionLot } from "@/types/auction";
+import { AdminScheduleModal } from "@/components/admin-schedule-modal";
 
 export default function AdminDashboardPage() {
-  const { auctions, approveAuction } = useAuction();
+  const { auctions, updateAuctionSchedule } = useAuction();
+  const [editingLot, setEditingLot] = useState<AuctionLot | null>(null);
 
   const totalGMV = auctions.reduce((acc, curr) => acc + curr.currentBid, 0);
   const platformFees = Math.round(totalGMV * 0.05);
@@ -148,6 +152,14 @@ export default function AdminDashboardPage() {
                   </span>
                 </div>
 
+                <button
+                  onClick={() => setEditingLot(lot)}
+                  className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs transition flex items-center space-x-1.5"
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Set Timer</span>
+                </button>
+
                 <Link
                   href={`/auctions/${lot.id}`}
                   className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition"
@@ -159,6 +171,14 @@ export default function AdminDashboardPage() {
           ))}
         </div>
       </div>
+
+      {editingLot && (
+        <AdminScheduleModal
+          lot={editingLot}
+          onClose={() => setEditingLot(null)}
+          onSave={updateAuctionSchedule}
+        />
+      )}
     </div>
   );
 }

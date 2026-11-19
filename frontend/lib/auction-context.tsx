@@ -38,6 +38,7 @@ interface AuctionContextType {
   simulateOpponentBid: (auctionId: string) => void;
   createAuction: (newLot: Partial<AuctionLot>) => AuctionLot;
   approveAuction: (auctionId: string) => void;
+  updateAuctionSchedule: (auctionId: string, schedule: { startTime?: string; endTime?: string; status?: AuctionLot["status"]; isLive?: boolean }) => void;
   releaseEscrow: (orderId: string) => void;
   depositFunds: (amount: number) => void;
 }
@@ -332,10 +333,10 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       minIncrement: newLot.minIncrement || 1000,
       estimatedLow: newLot.estimatedLow || (newLot.startingBid || 10000),
       estimatedHigh: newLot.estimatedHigh || ((newLot.startingBid || 10000) * 1.5),
-      startTime: new Date().toISOString(),
-      endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      status: "live",
-      isLive: true,
+      startTime: newLot.startTime || new Date().toISOString(),
+      endTime: newLot.endTime || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      status: newLot.status || (newLot.startTime && new Date(newLot.startTime).getTime() > Date.now() + 60000 ? "upcoming" : "live"),
+      isLive: newLot.startTime ? new Date(newLot.startTime).getTime() <= Date.now() + 60000 : true,
       snipingExtendedMinutes: 0,
       bidsCount: 0,
       watchersCount: 1,
@@ -391,6 +392,40 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return a;
     });
     saveAuctions(updated);
+  };
+
+  const updateAuctionSchedule = (
+    auctionId: string,
+    schedule: { startTime?: string; endTime?: string; status?: AuctionLot["status"]; isLive?: boolean }
+  ) => {
+    api.updateAuctionSchedule(auctionId, schedule, "usr-admin-1");
+
+    const updated = auctions.map((a) => {
+      if (a.id === auctionId) {
+        return {
+          ...a,
+          ...(schedule.startTime && { startTime: schedule.startTime }),
+          ...(schedule.endTime && { endTime: schedule.endTime }),
+          ...(schedule.status && { status: schedule.status }),
+          ...(typeof schedule.isLive === "boolean" && { isLive: schedule.isLive }),
+        };
+      }
+      return a;
+    });
+    saveAuctions(updated);
+
+    setNotifications((prev) => [
+      {
+        id: `notif-${Date.now()}`,
+        title: "Auction Timer Updated",
+        message: `Super Admin updated schedule for lot ${auctionId}.`,
+        type: "info",
+        timestamp: "Just now",
+        read: false,
+        link: `/auctions/${auctionId}`,
+      },
+      ...prev,
+    ]);
   };
 
   const releaseEscrow = (orderId: string) => {
@@ -470,6 +505,7 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         simulateOpponentBid,
         createAuction,
         approveAuction,
+        updateAuctionSchedule,
         releaseEscrow,
         depositFunds,
       }}

@@ -50,6 +50,33 @@ export class AdminController {
     res.json({ success: true, message: "Lot approved and set live.", auction: updated });
   }
 
+  static async updateAuctionSchedule(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const { id } = req.params;
+    const { startTime, endTime, status, isLive } = req.body;
+
+    const existing = await db.getAuctionById(id);
+    if (!existing) {
+      res.status(404).json({ success: false, error: "Auction not found" });
+      return;
+    }
+
+    const updated = await db.updateAuction(id, {
+      ...(startTime && { startTime }),
+      ...(endTime && { endTime }),
+      ...(status && { status }),
+      ...(typeof isLive === "boolean" && { isLive })
+    });
+
+    await db.addLog({
+      userId: req.user?.id,
+      action: "ADMIN_SCHEDULE_UPDATED",
+      details: `Lot #${existing.lotNumber} schedule updated by Super Admin (End: ${endTime || existing.endTime})`,
+      severity: "info"
+    });
+
+    res.json({ success: true, message: "Auction schedule updated successfully.", auction: updated });
+  }
+
   static async verifyKYC(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { userId, status } = req.body;
     const target = await db.getUserById(userId);

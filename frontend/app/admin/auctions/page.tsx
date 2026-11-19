@@ -1,12 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { Gavel, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Gavel, ArrowLeft, CheckCircle2, Clock } from "lucide-react";
 import { useAuction } from "@/lib/auction-context";
+import { AuctionLot } from "@/types/auction";
+import { AdminScheduleModal } from "@/components/admin-schedule-modal";
 
 export default function AdminAuctionsPage() {
-  const { auctions, approveAuction } = useAuction();
+  const { auctions, approveAuction, updateAuctionSchedule } = useAuction();
+  const [editingLot, setEditingLot] = useState<AuctionLot | null>(null);
 
   return (
     <div className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 w-full">
@@ -17,7 +20,7 @@ export default function AdminAuctionsPage() {
             <span>Curator Lot Moderation</span>
           </div>
           <h1 className="text-3xl font-black text-slate-950">Auction Lots & Approvals</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage active auctions, verify reserves, and approve pending lots.</p>
+          <p className="text-sm text-slate-500 mt-1">Manage active auctions, set start/end schedules, and approve pending lots.</p>
         </div>
         <Link href="/admin/dashboard" className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold flex items-center space-x-1.5">
           <ArrowLeft className="w-4 h-4" />
@@ -33,11 +36,14 @@ export default function AdminAuctionsPage() {
               <div>
                 <span className="font-mono text-xs text-slate-400 font-bold">Lot #{lot.lotNumber} • {lot.category}</span>
                 <h4 className="font-bold text-slate-900 text-sm">{lot.title}</h4>
-                <div className="text-xs text-slate-500">Current Bid: <strong className="font-mono text-slate-900">${lot.currentBid.toLocaleString()}</strong></div>
+                <div className="text-xs text-slate-500">
+                  Current Bid: <strong className="font-mono text-slate-900">${lot.currentBid.toLocaleString()}</strong> • Ends:{" "}
+                  <strong className="font-mono text-slate-700">{new Date(lot.endTime).toLocaleString()}</strong>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2.5">
               {lot.status !== "live" ? (
                 <button onClick={() => approveAuction(lot.id)} className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold">
                   Approve & Set Live
@@ -47,6 +53,15 @@ export default function AdminAuctionsPage() {
                   <CheckCircle2 className="w-3.5 h-3.5" /> <span>Live</span>
                 </span>
               )}
+
+              <button
+                onClick={() => setEditingLot(lot)}
+                className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold flex items-center space-x-1"
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>Set Timer</span>
+              </button>
+
               <Link href={`/auctions/${lot.id}`} className="px-3.5 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">
                 Inspect
               </Link>
@@ -54,6 +69,14 @@ export default function AdminAuctionsPage() {
           </div>
         ))}
       </div>
+
+      {editingLot && (
+        <AdminScheduleModal
+          lot={editingLot}
+          onClose={() => setEditingLot(null)}
+          onSave={updateAuctionSchedule}
+        />
+      )}
     </div>
   );
 }

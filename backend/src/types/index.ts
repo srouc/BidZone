@@ -150,3 +150,37 @@ export interface ActivityLog {
   severity: "info" | "warning" | "alert";
 }
 
+export type OtpPurpose = "REGISTRATION" | "LOGIN_2FA" | "WALLET_DEPOSIT" | "PASSWORD_RESET";
+
+export interface OtpRecord {
+  id: string;
+  email: string;
+  code: string;
+  purpose: OtpPurpose;
+  expiresAt: string;
+  attempts: number;
+  isUsed: boolean;
+  createdAt: string;
+}
+
+export type PaymentMethod = "ABA_KHQR" | "STRIPE" | "FEDWIRE" | "SWIFT";
+export type PaymentStatus = "PENDING" | "COMPLETED" | "FAILED" | "CANCELLED";
+
+export interface PaymentTransaction {
+  id: string;
+  userId: string;
+  amount: number;
+  currency: string;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  reference: string;
+  qrString?: string;
+  qrImage?: string;
+  checkoutUrl?: string;
+  clientSecret?: string;
+  metadata?: Record<string, any>;
+  createdAt: string;
+  completedAt?: string;
+}
+
+

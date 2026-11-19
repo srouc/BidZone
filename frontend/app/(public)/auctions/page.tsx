@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { Suspense, useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { 
   Search, 
@@ -19,7 +19,7 @@ import { AuctionCard } from "@/components/auction-card";
 import { AuctionCategory, AuctionStatus } from "@/types/auction";
 import Link from "next/link";
 
-export default function AuctionsPage() {
+function AuctionsPageContent() {
   const searchParams = useSearchParams();
   const { auctions } = useAuction();
 
@@ -338,6 +338,20 @@ export default function AuctionsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AuctionsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="py-24 max-w-7xl mx-auto px-4 text-center text-sm font-semibold text-slate-500">
+          Loading auction marketplace…
+        </div>
+      }
+    >
+      <AuctionsPageContent />
+    </Suspense>
   );
 }
 

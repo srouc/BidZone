@@ -5,6 +5,7 @@ import bidRoutes from "./bid.routes.js";
 import escrowRoutes from "./escrow.routes.js";
 import walletRoutes from "./wallet.routes.js";
 import adminRoutes from "./admin.routes.js";
+import paymentRoutes from "./payment.routes.js";
 
 const apiRouter = Router();
 
@@ -13,6 +14,7 @@ apiRouter.use("/auctions", auctionRoutes);
 apiRouter.use("/bids", bidRoutes);
 apiRouter.use("/escrow", escrowRoutes);
 apiRouter.use("/wallet", walletRoutes);
+apiRouter.use("/payments", paymentRoutes);
 apiRouter.use("/admin", adminRoutes);
 
 export default apiRouter;

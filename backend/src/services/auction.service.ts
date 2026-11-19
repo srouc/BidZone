@@ -76,6 +76,12 @@ export class AuctionService {
     const existing = await db.getAuctions();
     const lotNumber = 100 + existing.length + 1;
 
+    const startTime = lotData.startTime ? new Date(lotData.startTime).toISOString() : new Date().toISOString();
+    const endTime = lotData.endTime
+      ? new Date(lotData.endTime).toISOString()
+      : new Date(new Date(startTime).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const isUpcoming = new Date(startTime).getTime() > Date.now() + 60 * 1000;
+
     const newLot: AuctionLot = {
       id: `auc-${Date.now()}`,
       lotNumber,
@@ -93,10 +99,10 @@ export class AuctionService {
       minIncrement: lotData.minIncrement || 1000,
       estimatedLow: lotData.estimatedLow || (lotData.startingBid || 10000),
       estimatedHigh: lotData.estimatedHigh || ((lotData.startingBid || 10000) * 1.5),
-      startTime: new Date().toISOString(),
-      endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      status: "live",
-      isLive: true,
+      startTime,
+      endTime,
+      status: lotData.status || (isUpcoming ? "upcoming" : "live"),
+      isLive: lotData.isLive !== undefined ? lotData.isLive : !isUpcoming,
       snipingExtendedMinutes: 0,
       bidsCount: 0,
       watchersCount: 1,
